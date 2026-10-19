@@ -1,0 +1,25 @@
+- name: Extract PassMax Source
+        run: |
+          set -e
+          ZIP=$(ls *.zip 2>/dev/null | head -n 1 || true)
+          if [ -z "$ZIP" ]; then
+            echo "❌ No zip file found in repo root! Did you upload it?"
+            ls -la
+            exit 1
+          fi
+          echo "Found zip: $ZIP"
+          unzip -q "$ZIP" -d /tmp/src
+          SRC=$(find /tmp/src -maxdepth 4 -name "settings.gradle.kts" -printf '%h\n' | head -n 1)
+          if [ -z "$SRC" ]; then
+            echo "❌ settings.gradle.kts not found inside the zip. Zip structure:"
+            find /tmp/src -maxdepth 3
+            exit 1
+          fi
+          echo "Android project found at: $SRC"
+          cp -r "$SRC"/. .
+          ls -la
+          if [ ! -f gradlew ]; then
+            echo "❌ gradlew still missing at root after extract!"
+            exit 1
+          fi
+          echo "✅ Source tree ready."
